@@ -9,12 +9,12 @@ Getting Karstolution to work with data from babs
 
 from os import chdir, listdir
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
+import matplotlib.pyplot as plt
 from copy import deepcopy
 import yaml
-from Karstolution  import karstolution
+from Karstolution import karstolution
 
 
 chdir('C:/Users/Aakas/Documents/School/Oster_lab/karstolution/')
@@ -35,8 +35,7 @@ def load_data():
                            sep=' ')
         data.dropna(how='all', inplace=True)
         data.reset_index(inplace=True, drop=True)
-        all_data[file.replace('caves_', '')[:-4]] = data.apply(pd.to_numeric,
-                                                               errors='ignore')
+        all_data[file.replace('caves_', '')[:-4]] = data
         # This needs to be converted in form I want a dictionary containing
         # the cave names as keys, with the value being a second dict. This
         # second dict will contain the mapping from years to the actual climate
@@ -48,10 +47,13 @@ def load_data():
 
     for key, value in all_data.items():
         # Reference colum that tells us the positions of the breaks
-        test_ref = ~pd.to_numeric(all_data[key]['d18o'],
+        test_ref = ~pd.to_numeric(value['d18o'],
                                   errors='coerce').fillna(0).astype('bool')
         test_ref = test_ref.reset_index(level=0)
         test_ref.drop(test_ref[test_ref.d18o == False].index, inplace=True)
+        # Add last index to capture final cave
+        test_ref = test_ref.append({'index': value.d18o.size, 'd18o': True},
+                                   ignore_index=True)
 
         for start, end in zip(test_ref['index'], test_ref['index'][1:]):
             name = value.d18o[start]
@@ -117,10 +119,17 @@ def run_karstolution(karst_clim_data):
 
     for cave, eras in karst_outputs.items():
         for time, data in eras.items():
+            print(cave, time)
             eras[time] = karstolution(config, data, calculate_drip=True)
 
     return karst_outputs
 
 
 def main():
-    pass
+    raw_data = load_data()
+    clim_data = clean_data(raw_data)
+    karst_outputs = run_karstolution(clean_data)
+
+
+if __name__ == '__main__':
+    main()
