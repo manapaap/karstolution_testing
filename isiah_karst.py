@@ -60,7 +60,7 @@ def load_data():
         info['d18o'] = pd.read_excel('datafiles/Isiah/d18O_data.xlsx',
                                      sheet_name=place, skiprows=4,
                                      names=['month', 'd18o'])
-        info['d18o']['tt'] = info['d18o'].index + 1
+        info['d18o']['mm'] = info['d18o'].index + 1
     return data
 
 
@@ -81,9 +81,10 @@ def clean_data(raw_data, evpt_calc='TH'):
         final_df.drop(['evpt_BC', 'evpt_TH'], axis=1, inplace=True)
 
         # Adding tt for karstolution and to allow d18o merge
-        final_df['tt'] = final_df['date'].dt.month
-        final_df = final_df.merge(value['d18o'], on='tt', how='left')
+        final_df['mm'] = final_df['date'].dt.month
+        final_df = final_df.merge(value['d18o'], on='mm', how='left')
 
+        final_df['tt'] = final_df.index
         clean_data[key] = final_df
 
     return clean_data
@@ -119,6 +120,36 @@ def compare_dates(rain, evpt):
     return final_df
 
 
+def run_karstolution(karst_data, config):
+    """
+    Runs karstolution using the provided inputs,
+    looping over each site in question
+    """
+    karst_outputs = {}
+    for key, value in karst_data.items():
+        karst_outputs[key] = karstolution(config, value, calculate_drip=True)
+
+    return karst_outputs
+
+
+def csv_out(karst_data, name):
+    """
+    Prints the dictionary of values into three separate CSVs so I can send to
+    Isiah. For both the raw data and the processed form
+    """
+    for key, value in karst_data.items():
+        value.to_csv('datafiles/outputs/' + name + '_' + key + '.csv',
+                     index=False)
+
+
 if __name__ == '__main__':
     raw_data = load_data()
     karst_data = clean_data(raw_data)
+
+    config = yaml.safe_load(open('config.yaml', 'rt').read())
+
+    karst_output = run_karstolution(karst_data, config)
+
+    csv_out(karst_data, 'input')
+    csv_out(karst_output, 'output')
+

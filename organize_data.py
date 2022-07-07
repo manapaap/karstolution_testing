@@ -119,7 +119,6 @@ def run_karstolution(karst_clim_data):
 
     for cave, eras in karst_outputs.items():
         for time, data in eras.items():
-            print(cave, time)
             eras[time] = karstolution(config, data, calculate_drip=True)
 
     return karst_outputs
