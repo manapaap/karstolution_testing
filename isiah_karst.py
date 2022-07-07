@@ -78,12 +78,13 @@ def clean_data(raw_data, evpt_calc='TH'):
 
         # Relabelling the evpt
         final_df['evpt'] = final_df['evpt_' + evpt_calc]
-        final_df.drop(['evpt_BC', 'evpt_TH'], axis=1, inplace=True)
 
         # Adding tt for karstolution and to allow d18o merge
         final_df['mm'] = final_df['date'].dt.month
         final_df = final_df.merge(value['d18o'], on='mm', how='left')
 
+        # Dropping redundant cols, adding final touches
+        final_df.drop(['evpt_BC', 'evpt_TH', 'month'], axis=1, inplace=True)
         final_df['tt'] = final_df.index
         clean_data[key] = final_df
 
@@ -152,4 +153,3 @@ if __name__ == '__main__':
 
     csv_out(karst_data, 'input')
     csv_out(karst_output, 'output')
-
