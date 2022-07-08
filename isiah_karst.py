@@ -143,7 +143,49 @@ def csv_out(karst_data, name):
                      index=False)
 
 
-if __name__ == '__main__':
+def plot_stals(karst_output, site, fig=1):
+    """
+    Plots the individual stalagmite segments
+    """
+    plt.figure(fig)
+    plt.plot(karst_output[site].tt, karst_output[site].stal1_growth_rate,
+             label=1)
+    plt.plot(karst_output[site].tt, karst_output[site].stal2_growth_rate,
+             label=2)
+    plt.plot(karst_output[site].tt, karst_output[site].stal3_growth_rate,
+             label=3)
+    plt.plot(karst_output[site].tt, karst_output[site].stal4_growth_rate,
+             label=4)
+    plt.plot(karst_output[site].tt, karst_output[site].stal5_growth_rate,
+             label=5)
+    plt.legend()
+    plt.xlabel('Months since start')
+    plt.ylabel('Stalagmite growth rate')
+    plt.title(site + ' pseudo-speleothem growth rates')
+
+
+def plot_d18o(karst_output, site, fig=1):
+    """
+    Plots the individual stalagmite segments d18O variation
+    """
+    plt.figure(fig)
+    plt.plot(karst_output[site].tt, karst_output[site].stal1d18o,
+             label=1)
+    plt.plot(karst_output[site].tt, karst_output[site].stal2d18o,
+             label=2)
+    plt.plot(karst_output[site].tt, karst_output[site].stal3d18o,
+             label=3)
+    plt.plot(karst_output[site].tt, karst_output[site].stal4d18o,
+             label=4)
+    plt.plot(karst_output[site].tt, karst_output[site].stal5d18o,
+             label=5)
+    plt.legend()
+    plt.xlabel('Months since start')
+    plt.ylabel('d18O in speleothem tip')
+    plt.title(site + ' pseudo-speleothem d18O variation')
+
+
+def main():
     raw_data = load_data()
     karst_data = clean_data(raw_data)
 
@@ -151,5 +193,17 @@ if __name__ == '__main__':
 
     karst_output = run_karstolution(karst_data, config)
 
-    csv_out(karst_data, 'input')
-    csv_out(karst_output, 'output')
+    # csv_out(karst_data, 'input')
+    # csv_out(karst_output, 'output')
+
+    plot_stals(karst_output, 'WA')
+    plot_stals(karst_output, 'PR', 2)
+    plot_stals(karst_output, 'MG', 3)
+
+    plot_d18o(karst_output, 'WA', 4)
+    plot_d18o(karst_output, 'PR', 5)
+    plot_d18o(karst_output, 'MG', 6)
+
+
+if __name__ == '__main__':
+    main()
